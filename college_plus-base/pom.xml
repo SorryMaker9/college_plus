@@ -3,14 +3,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.xuecheng</groupId>
-        <artifactId>xuecheng-plus-parent</artifactId>
+        <groupId>com.feng</groupId>
+        <artifactId>college_plus-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../xuecheng-plus-parent</relativePath>
+        <relativePath>../college_plus-parent</relativePath>
     </parent>
 
 
-    <artifactId>xuecheng-plus-base</artifactId>
+    <artifactId>college_plus-base</artifactId>
 
     <dependencies>
         <dependency>
