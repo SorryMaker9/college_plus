@@ -3,6 +3,8 @@ package com.feng.content.mapper;
 import com.feng.content.model.po.CourseBase;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
+import org.springframework.stereotype.Repository;
 
 /**
  * <p>
@@ -11,6 +13,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  *
  * @author feng
  */
+@Repository
 public interface CourseBaseMapper extends BaseMapper<CourseBase> {
 
 }
