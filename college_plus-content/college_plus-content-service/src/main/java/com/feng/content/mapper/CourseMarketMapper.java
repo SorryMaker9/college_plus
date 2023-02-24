@@ -3,6 +3,7 @@ package com.feng.content.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.feng.content.model.po.CourseMarket;
+import org.springframework.stereotype.Repository;
 
 /**
  * <p>
@@ -11,6 +12,7 @@ import com.feng.content.model.po.CourseMarket;
  *
  * @author itcast
  */
+@Repository
 public interface CourseMarketMapper extends BaseMapper<CourseMarket> {
 
 }
