@@ -4,6 +4,7 @@ import com.feng.base.model.PageParams;
 import com.feng.base.model.PageResult;
 import com.feng.content.model.dto.AddCourseDto;
 import com.feng.content.model.dto.CourseBaseInfoDto;
+import com.feng.content.model.dto.EditCourseDto;
 import com.feng.content.model.dto.QueryCourseParamsDto;
 import com.feng.content.model.po.CourseBase;
 
@@ -24,9 +25,14 @@ public interface CourseBaseInfoService {
 
     /**
      * 新增课程
+     *
      * @param companyId
      * @param addCourseDto
      * @return
      */
     public CourseBaseInfoDto createCourseBase(Long companyId, AddCourseDto addCourseDto);
+
+    public CourseBaseInfoDto getCourseBaseInfo(Long courseId);
+
+    public CourseBaseInfoDto updateCourseBaseInfo(Long companyId, EditCourseDto dto);
 }

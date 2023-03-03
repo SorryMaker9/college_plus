@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: system-service
+  cloud:
+    nacos:
+      server-addr: 192.168.10.100:8848
+      discovery:
+        namespace: ${spring.profiles.active}
+        group: college_plus-project
+      config:
+        group: college_plus-project
+        namespace: ${spring.profiles.active}
+        file-extension: yaml
+        refresh-enabled: true
+        shared-configs:
+          - data-id: logging-${spring.profiles.active}.yaml
+            group: college_plus-common
+            refresh: true
+          - data-id: swagger-${spring.profiles.active}.yaml
+            group: college_plus-common
+            refresh: true
+          - data-id: mybatis-plus-${spring.profiles.active}.yaml
+            group: college_plus-common
+            refresh: true
+  profiles:
+    active: dev
+
+
+
