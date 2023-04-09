@@ -156,7 +156,7 @@ public class MediaFileServiceImpl implements MediaFileService {
         String filename = mediaFiles.getFilename();
         String extension = filename.substring(filename.lastIndexOf("."));
         String mimeType = getMimeType(extension);
-        if(mimeType.equals("video/x-msvideo")){
+        if("video/x-msvideo".equals(mimeType)){
             //如果是avi视频写入待处理任务
             MediaProcess mediaProcess = new MediaProcess();
             BeanUtils.copyProperties(mediaFiles,mediaProcess);
@@ -312,10 +312,6 @@ public class MediaFileServiceImpl implements MediaFileService {
         return chunkFiles;
     }*/
 
-    @Override
-    public MediaFiles getFileById(String id) {
-        return null;
-    }
 
     @Override
     public File downloadFileFromMinIO(String bucket, String objectName) {
@@ -345,7 +341,8 @@ public class MediaFileServiceImpl implements MediaFileService {
         return fileMd5.charAt(0) + "/" + fileMd5.charAt(1) + "/" + fileMd5 + "/" + "chunk" + "/";
     }
 
-    private void addMediaFilesToMinio(String filePath, String bucket, String objectName) {
+    @Override
+    public void addMediaFilesToMinio(String filePath, String bucket, String objectName) {
         try {
             UploadObjectArgs uploadObjectArgs = UploadObjectArgs.builder().bucket(bucket).object(objectName).filename(filePath).build();
             minioClient.uploadObject(uploadObjectArgs);
@@ -353,6 +350,12 @@ public class MediaFileServiceImpl implements MediaFileService {
         } catch (Exception e) {
             CollegePlusException.cast("文件上传到文件系统失败");
         }
+    }
+
+    @Override
+    public MediaFiles getFileById(String mediaId) {
+        MediaFiles mediaFiles = mediaFilesMapper.selectById(mediaId);
+        return mediaFiles;
     }
 
     private void addMediaFilesToMinio(byte[] bytes, String bucket, String objectName) {

@@ -88,13 +88,23 @@ public interface MediaFileService {
      */
     public RestResponse mergeChunks(Long companyId,String fileMd5, int chunkTotal,UploadFileParamsDto uploadFileParamsDto);
 
-    /**
-     * 根据Id查询文件信息
-     * @param id
-     * @return
-     */
-    public MediaFiles getFileById(String id);
+
     //根据桶和文件路径从minio下载文件
     public File downloadFileFromMinIO(String bucket, String objectName);
+
+    /**
+     * 上传文件
+     * @param filePath
+     * @param bucket
+     * @param objectName
+     */
+    public void addMediaFilesToMinio(String filePath, String bucket, String objectName);
+
+    /**
+     * 根据媒资Id查询文件信息
+     * @param mediaId
+     * @return
+     */
+    public MediaFiles getFileById(String mediaId);
 
 }

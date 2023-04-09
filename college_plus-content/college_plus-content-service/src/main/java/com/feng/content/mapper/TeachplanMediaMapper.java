@@ -9,8 +9,9 @@ import org.springframework.stereotype.Repository;
  *  Mapper 接口
  * </p>
  *
- * @author itcast
+ * @author sorrymaker
  */
+@Repository
 public interface TeachplanMediaMapper extends BaseMapper<TeachplanMedia> {
 
 }

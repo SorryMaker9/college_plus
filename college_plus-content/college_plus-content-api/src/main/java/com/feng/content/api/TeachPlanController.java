@@ -1,9 +1,11 @@
 package com.feng.content.api;
 
+import com.feng.content.model.dto.BindTeachPlanMediaDto;
 import com.feng.content.model.dto.SaveTeachplanDto;
 import com.feng.content.model.dto.TeachPlanDto;
 import com.feng.content.service.TeachPlanService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -30,5 +32,11 @@ public class TeachPlanController {
     @PostMapping("/teachplan")
     public void saveTeachPlan(@RequestBody SaveTeachplanDto dto){
         teachPlanService.saveTeachplan(dto);
+    }
+    @ApiOperation("课程计划和媒资信息绑定")
+    @PostMapping(value = "teachplan/association/media")
+    public void associationMedia(@RequestBody BindTeachPlanMediaDto bindTeachPlanMediaDto){
+        teachPlanService.associationMedia(bindTeachPlanMediaDto);
+
     }
 }

@@ -53,7 +53,6 @@ public class MediaProcess implements Serializable {
     /**
      * 完成时间
      */
-    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime finishDate;
 
     /**

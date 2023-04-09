@@ -11,4 +11,16 @@ import java.util.List;
  **/
 public interface MediaProcessService {
     public List<MediaProcess> getMediaProcessList(int sharedTotal, int sharedIndex, int count);
+
+    /**
+     * 保存任务结果
+     * @param taskId
+     * @param status
+     * @param fileId
+     * @param url
+     * @param errorMsg
+     */
+    public void saveProcessFinishStatus(Long taskId,String status,String fileId,String url,String errorMsg);
+
+    boolean startTask(Long id);
 }
