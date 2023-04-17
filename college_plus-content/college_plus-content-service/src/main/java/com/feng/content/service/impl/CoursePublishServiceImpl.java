@@ -2,6 +2,7 @@ package com.feng.content.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.feng.base.exception.CollegePlusException;
+import com.feng.base.exception.CommonError;
 import com.feng.base.utils.StringUtil;
 import com.feng.content.mapper.CourseBaseMapper;
 import com.feng.content.mapper.CourseMarketMapper;
@@ -17,6 +18,8 @@ import com.feng.content.model.po.CoursePublishPre;
 import com.feng.content.service.CourseBaseInfoService;
 import com.feng.content.service.CoursePublishService;
 import com.feng.content.service.TeachPlanService;
+import com.feng.messagesdk.model.po.MqMessage;
+import com.feng.messagesdk.service.MqMessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +54,10 @@ public class CoursePublishServiceImpl implements CoursePublishService {
 
     @Autowired
     private CoursePublishMapper coursePublishMapper;
+
+    @Autowired
+    private MqMessageService mqMessageService;
+
 
     @Override
     public CoursePreviewDto getCoursePreviewInfo(Long courseId) {
@@ -132,7 +139,19 @@ public class CoursePublishServiceImpl implements CoursePublishService {
             coursePublishMapper.updateById(coursePublish);
         }
 
+        saveCoursePublishMessage(courseId);
 
         coursePublishPreMapper.deleteById(courseId);
+    }
+
+    /**
+     * 保存消息表记录
+     * @param courseId
+     */
+    public void saveCoursePublishMessage(Long courseId){
+        MqMessage mqMessage = mqMessageService.addMessage("course_publish", String.valueOf(courseId), null, null);
+        if (mqMessage == null) {
+            CollegePlusException.cast(CommonError.UNKOWN_ERROR);
+        }
     }
 }
