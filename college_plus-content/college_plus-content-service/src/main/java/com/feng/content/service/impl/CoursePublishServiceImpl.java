@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.feng.base.exception.CollegePlusException;
 import com.feng.base.exception.CommonError;
 import com.feng.base.utils.StringUtil;
+import com.feng.content.config.MultipartSupportConfig;
+import com.feng.content.feignclient.MediaServiceClient;
 import com.feng.content.mapper.CourseBaseMapper;
 import com.feng.content.mapper.CourseMarketMapper;
 import com.feng.content.mapper.CoursePublishMapper;
@@ -20,13 +22,24 @@ import com.feng.content.service.CoursePublishService;
 import com.feng.content.service.TeachPlanService;
 import com.feng.messagesdk.model.po.MqMessage;
 import com.feng.messagesdk.service.MqMessageService;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -58,6 +71,9 @@ public class CoursePublishServiceImpl implements CoursePublishService {
     @Autowired
     private MqMessageService mqMessageService;
 
+    @Autowired
+    private MediaServiceClient mediaServiceClient;
+
 
     @Override
     public CoursePreviewDto getCoursePreviewInfo(Long courseId) {
@@ -88,11 +104,11 @@ public class CoursePublishServiceImpl implements CoursePublishService {
             CollegePlusException.cast("请求上传课程图片");
         }
         List<TeachPlanDto> teachPlayTree = teachPlanService.findTeachPlayTree(courseId);
-        if(teachPlayTree == null || teachPlayTree.size() == 0){
+        if (teachPlayTree == null || teachPlayTree.size() == 0) {
             CollegePlusException.cast("请编写课程计划");
         }
         CoursePublishPre coursePublishPre = new CoursePublishPre();
-        BeanUtils.copyProperties(courseBaseInfo,coursePublishPre);
+        BeanUtils.copyProperties(courseBaseInfo, coursePublishPre);
         coursePublishPre.setCompanyId(companyId);
 
         CourseMarket courseMarket = courseMarketMapper.selectById(courseId);
@@ -106,7 +122,7 @@ public class CoursePublishServiceImpl implements CoursePublishService {
         coursePublishPre.setCreateDate(LocalDateTime.now());
 
         CoursePublishPre coursePublishPreObj = coursePublishPreMapper.selectById(courseId);
-        if(coursePublishPreObj == null){
+        if (coursePublishPreObj == null) {
             coursePublishPreMapper.insert(coursePublishPre);
         } else {
             coursePublishPreMapper.updateById(coursePublishPre);
@@ -121,19 +137,19 @@ public class CoursePublishServiceImpl implements CoursePublishService {
     @Override
     public void publish(Long companyId, Long courseId) {
         CoursePublishPre coursePublishPre = coursePublishPreMapper.selectById(courseId);
-        if(coursePublishPre == null){
+        if (coursePublishPre == null) {
             CollegePlusException.cast("课程没有审核记录,无法发布");
         }
         String status = coursePublishPre.getStatus();
-        if(!"202004".equals(status)){
+        if (!"202004".equals(status)) {
             CollegePlusException.cast("课程没有审核通过不允许发布");
         }
 
         CoursePublish coursePublish = new CoursePublish();
-        BeanUtils.copyProperties(coursePublishPre,coursePublish);
+        BeanUtils.copyProperties(coursePublishPre, coursePublish);
 
         CoursePublish coursePublishObj = coursePublishMapper.selectById(courseId);
-        if(coursePublishObj == null){
+        if (coursePublishObj == null) {
             coursePublishMapper.insert(coursePublish);
         } else {
             coursePublishMapper.updateById(coursePublish);
@@ -144,11 +160,57 @@ public class CoursePublishServiceImpl implements CoursePublishService {
         coursePublishPreMapper.deleteById(courseId);
     }
 
+    @Override
+    public File generateCourseHtml(Long courseId) {
+        Configuration configuration = new Configuration(Configuration.getVersion());
+        File htmlFile = null;
+        try {
+            String classpath = this.getClass().getResource("/").getPath();
+            configuration.setDirectoryForTemplateLoading(new File(classpath + "/templates/"));
+            configuration.setDefaultEncoding("utf-8");
+            Template template = configuration.getTemplate("course_template.ftl");
+            CoursePreviewDto coursePreviewInfo = this.getCoursePreviewInfo(courseId);
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("model", coursePreviewInfo);
+            String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, map);
+            InputStream inputStream = IOUtils.toInputStream(html, "utf-8");
+            File dictionary = new File("F://temp");
+            htmlFile = File.createTempFile("coursepublish",".html",dictionary);
+            FileOutputStream outputStream = new FileOutputStream(htmlFile);
+
+            IOUtils.copy(inputStream, outputStream);
+        } catch (Exception e) {
+            log.error("页面静态化出现问题,课程id:{}", courseId, e);
+            e.printStackTrace();
+        }
+
+        return htmlFile;
+    }
+
+    @Override
+    public void uploadCourseHtml(Long courseId, File file) {
+        try {
+            MultipartFile multipartFile = MultipartSupportConfig.getMultipartFile(file);
+            String objectName = courseId + ".html";
+            String upload = mediaServiceClient.upload(multipartFile, "course",objectName);
+
+            if(upload == null){
+                log.debug("远程调用走降级逻辑得到结果为空,课程id:{}",courseId);
+                CollegePlusException.cast("上传静态文件过程中存在异常");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            CollegePlusException.cast("上传静态文件异常");
+        }
+
+    }
+
     /**
      * 保存消息表记录
+     *
      * @param courseId
      */
-    public void saveCoursePublishMessage(Long courseId){
+    public void saveCoursePublishMessage(Long courseId) {
         MqMessage mqMessage = mqMessageService.addMessage("course_publish", String.valueOf(courseId), null, null);
         if (mqMessage == null) {
             CollegePlusException.cast(CommonError.UNKOWN_ERROR);

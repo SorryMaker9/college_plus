@@ -192,7 +192,7 @@
                                         <ul class="list-box">
                                             <#list firstNode.teachPlanTreeNodes as secondNode>
                                                 <li>
-                                                    <a href="http://www.college.cn/course/preview/learning.html?id=${model.courseBase.id}&chapter=${secondNode.id!''}"
+                                                    <a href="http://www.college.cn/course/preview/learning.html?id=${model.courseBase.id}&chapter=${secondNode.teachplanMedia.teachplanId!''}"
                                                        target="_blank">${secondNode.pname}</a></li>
                                             </#list>
                                         </ul>

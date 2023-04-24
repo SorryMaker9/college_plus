@@ -148,18 +148,17 @@ public class MediaFileServiceImpl implements MediaFileService {
     }
 
     /**
-     *
      * @param mediaFiles
      */
-    private void addWaitingTask(MediaFiles mediaFiles){
+    private void addWaitingTask(MediaFiles mediaFiles) {
         //获取文件mimeType
         String filename = mediaFiles.getFilename();
         String extension = filename.substring(filename.lastIndexOf("."));
         String mimeType = getMimeType(extension);
-        if("video/x-msvideo".equals(mimeType)){
+        if ("video/x-msvideo".equals(mimeType)) {
             //如果是avi视频写入待处理任务
             MediaProcess mediaProcess = new MediaProcess();
-            BeanUtils.copyProperties(mediaFiles,mediaProcess);
+            BeanUtils.copyProperties(mediaFiles, mediaProcess);
             //状态
             mediaProcess.setStatus("1");
             mediaProcess.setCreateDate(LocalDateTime.now());
@@ -169,6 +168,7 @@ public class MediaFileServiceImpl implements MediaFileService {
             mediaProcessMapper.insert(mediaProcess);
         }
     }
+
     @Override
     public RestResponse<Boolean> checkFile(String fileMd5) {
         //在文件表存在,并且在文件系统中存在,此文件才存在
@@ -195,22 +195,26 @@ public class MediaFileServiceImpl implements MediaFileService {
 
     @Override
     public RestResponse<Boolean> checkChunk(String fileMd5, int chunkIndex) {
+        //得到分块文件所在目录
         String chunkFileFolderPath = getChunkFileFolderPath(fileMd5);
+        //分块文件的路径
         String chunkFilePath = chunkFileFolderPath + chunkIndex;
 
-        //查询
-        GetObjectArgs getObjectArgs = GetObjectArgs.builder()
-                .bucket(bucket_videofiles)
-                .object(chunkFilePath)
-                .build();
+        //查询文件系统分块文件是否存在
+        //查看是否在文件系统存在
+        GetObjectArgs getObjectArgs = GetObjectArgs.builder().bucket(bucket_videofiles).object(chunkFilePath).build();
         try {
             InputStream inputStream = minioClient.getObject(getObjectArgs);
-            if (inputStream != null) {
-                return RestResponse.success(true);
+            if (inputStream == null) {
+                //文件不存在
+                return RestResponse.success(false);
             }
         } catch (Exception e) {
+            //文件不存在
             return RestResponse.success(false);
         }
+
+
         return RestResponse.success(true);
     }
 
@@ -275,7 +279,7 @@ public class MediaFileServiceImpl implements MediaFileService {
                 .limit(chunkTotal).map(i -> new DeleteObject(chunkFileFolderPath + i)).collect(Collectors.toList());
         RemoveObjectsArgs removeObjectsArgs = RemoveObjectsArgs.builder().bucket(bucket_videofiles).objects(objects).build();
         Iterable<Result<DeleteError>> results = minioClient.removeObjects(removeObjectsArgs);
-        results.forEach(Item->{
+        results.forEach(Item -> {
             try {
                 DeleteError deleteError = Item.get();
             } catch (Exception e) {

@@ -1,6 +1,7 @@
 package com.feng.base.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.List;
  */
  @Data
  @ToString
+ @NoArgsConstructor
 public class PageResult<T> {
   // 数据列表
   private List<T> items;
